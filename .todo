@@ -1,0 +1,8 @@
+% GRN 
+    ! GRN form
+    ! generate GRN
+% out 
+    ! out form
+    ! generate out
+    !! add fifo
+

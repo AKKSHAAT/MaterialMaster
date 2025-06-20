@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Set this in your .env file
+}
+
+// Material Master
+model Material {
+  id             String       @id @default(cuid())
+  name           String
+  unit           String
+  category       String
+  minStockLevel  Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  grns           GRN[]
+  issues         IssueNote[]
+}
+
+// GRN - Goods Receipt Note (Incoming)
+model GRN {
+  id            String       @id @default(cuid())
+  grnNumber     String       @unique
+  date          DateTime
+  materialId    String
+  quantity      Float
+  rate          Float
+  totalAmount   Float
+  supplierName  String
+  invoiceRef    String?
+  receivedBy    String
+  remarks       String?
+
+  material      Material     @relation(fields: [materialId], references: [id])
+  issueItems    IssueItem[]
+}
+
+// Issue Note (Outward/FIFO Core)
+model IssueNote {
+  id            String       @id @default(cuid())
+  issueNumber   String       @unique
+  date          DateTime
+  materialId    String
+  totalQuantity Float
+  weightedRate  Float
+  totalAmount   Float
+  issuedTo      String
+  purpose       String?
+  approvedBy    String
+
+  material      Material     @relation(fields: [materialId], references: [id])
+  issueItems    IssueItem[]
+}
+
+// IssueItem - Shows which GRN lot was used
+model IssueItem {
+  id            String     @id @default(cuid())
+  issueNoteId   String
+  grnId         String
+  quantity      Float
+  rate          Float
+  amount        Float
+
+  issueNote     IssueNote  @relation(fields: [issueNoteId], references: [id])
+  grn           GRN        @relation(fields: [grnId], references: [id])
+}
