@@ -4,8 +4,8 @@ import Link from "next/link";
 const Navbar = () => {
   return (
     <nav className="h-screen w-64 bg-[#18181b] text-white flex flex-col py-8 px-4 shadow-lg border-r border-[#2d2d37]">
-      <h2 className="text-xl mb-10 tracking-wide text-center">
-        Material Master Management
+      <h2 className="text-xl font-bold mb-10 tracking-wide text-center">
+        Material Master
       </h2>
       <ul className="flex flex-col gap-4">
         <li>
@@ -21,7 +21,7 @@ const Navbar = () => {
             href="/materials"
             className="block px-4 py-2 rounded hover:bg-[#23232b] transition-colors"
           >
-            Material Master
+            Material Management
           </Link>
         </li>
         <li>

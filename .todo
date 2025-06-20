@@ -1,6 +1,7 @@
 % GRN 
     ! GRN form
     ! generate GRN
+    ? add unit next to rate in form
 % out 
     ! out form
     ! generate out
