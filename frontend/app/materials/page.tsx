@@ -1,5 +1,6 @@
 import React from 'react'
 import api from '../axios'
+import EditButton from '../components/EditButton';
 
 const page = async () => {
     const meterials = await api.get('/materials');
@@ -17,7 +18,10 @@ const page = async () => {
   return (
     <div className="min-h-screen bg-[#18181b] text-white p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Materials</h1>
+        <div className="flex justify-between gap-4 max-w-3xl mx-auto">
+            <h1 className="text-2xl font-bold mb-6">Materials</h1>
+            <EditButton link="materials/add" text="New"/>
+        </div>
         <div className="overflow-x-auto rounded-lg shadow">
           <table className="min-w-full bg-[#23232b] border border-[#2d2d37]">
             <thead>

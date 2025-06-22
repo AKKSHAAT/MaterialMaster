@@ -32,6 +32,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1">{children}</main>
         </div>
+        <script src="https://kit.fontawesome.com/d011f3027e.js" crossOrigin="anonymous"></script>
       </body>
     </html>
   );
