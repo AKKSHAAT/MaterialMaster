@@ -19,6 +19,21 @@ router.get("/", async (req: any, res: any) => {
   }
 });
 
+
+router.get("/:id", async (req: any, res: any) => { 
+  const { id } = req.params;
+  try {
+    const grns = await prisma.gRN.findUnique({
+      where: { id: id },
+      include: { material: true },
+    });
+    res.status(200).json(grns);
+  } catch (error) {
+    console.error(`Error fetching GRNs: ${id}`, error);
+    res.status(500).json({ error: "Failed to fetch GRNs" });
+  }
+});
+
 router.post("/", async (req: any, res: any) => {
   const body = req.body;
   console.log("Received GRN data:", body);

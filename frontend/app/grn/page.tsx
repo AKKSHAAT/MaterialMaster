@@ -1,10 +1,25 @@
-import React from 'react'
+'use client'
+import React, {useState, useEffect} from 'react'
 import api from '../axios'
 import EditButton from '../components/EditButton';
+import { useRouter } from 'next/navigation';
 
-const page = async () => { 
-    const grns = await api.get('/grn');
-    console.log(grns);
+const page = () => { 
+    const [grns, setGrns] = useState<any[]>([]);
+    const router = useRouter();
+
+    useEffect(() => {
+      const fetchGrns = async () => {
+        try {
+          const response = await api.get('/grn');
+          setGrns(response);
+          console.log(response);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      fetchGrns();
+    }, []);
   
     if (!grns || grns.length === 0) {
         return (
@@ -37,12 +52,12 @@ const page = async () => {
             </thead>
             <tbody>
                 {grns?.map((grn: any, i: number) => (
-                    <tr key={`table-row-${i}`} className="hover:bg-[#282834] transition">
+                  <tr key={`table-row-${i}`} className="hover:bg-[#282834] transition" onClick={() => router.push(`/grn/${grn.id}`)}>
                         <td className="px-6 py-4 border-b border-[#2d2d37] font-mono">{grn.grnNumber}</td>
                         <td className="px-6 py-4 border-b border-[#2d2d37]">{grn.material.name || 'N/A'}</td>
                         <td className="px-6 py-4 border-b border-[#2d2d37]">{grn.quantity || 'N/A'}</td>
                         <td className="px-6 py-4 border-b border-[#2d2d37]">{grn.rate || 'N/A'}</td>
-                        <td className="px-6 py-4 border-b border-[#2d2d37]">{grn.supplier || 'N/A'}</td>
+                        <td className="px-6 py-4 border-b border-[#2d2d37]">{grn.supplierName || 'N/A'}</td>
                     </tr>
                 ))}
             </tbody>
