@@ -1,11 +1,11 @@
 import React from 'react'
-import api from '../axios'
 import EditButton from '../components/EditButton';
+import { getMaterials } from '../apis';
 
 const page = async () => {
-    const meterials = await api.get('/materials');
-    console.log(meterials.data);
-    if (!meterials.data || meterials.data.length === 0) {
+    const meterials = await getMaterials();
+    console.log("✌️✌️: ", meterials);
+    if (!meterials || meterials.length === 0) {
         return (
             <div className="min-h-screen bg-[#18181b] text-white p-8">
                 <div className="max-w-4xl mx-auto">
@@ -34,7 +34,7 @@ const page = async () => {
               </tr>
             </thead>
             <tbody>
-                {meterials.data.map((material: any, i: number) => (
+                {meterials.map((material: any, i: number) => (
                     <tr key={`table-row-${i}`} className="hover:bg-[#282834] transition">
                         <td className="px-6 py-4 border-b border-[#2d2d37] font-mono">{i+1}</td>
                         <td className="px-6 py-4 border-b border-[#2d2d37]">{material.name || 'N/A'}</td>

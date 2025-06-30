@@ -1,9 +1,18 @@
-% GRN 
-    ! GRN form
-    ! generate GRN
-    ? add unit next to rate in form
-% out 
-    ! out form
-    ! generate out
-    !! add fifo
+# % GRN 
+#     ! GRN form
+#     ! generate GRN
+#     ? add unit next to rate in form
+# % out 
+#     ! out form
+#     ! generate out
+#     !! add fifo
+# % how to diplay used qty in GRNS
+# fix grn table
 
+! add issue-note table 
+! add GRN to isue-note table 
+! add loading and redirection
+!! read doc paste ideas here
+
+!! read flow 
+!! understand how to actully display notes 

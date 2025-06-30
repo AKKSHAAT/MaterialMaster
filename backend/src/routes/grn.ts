@@ -1,16 +1,18 @@
 import { Router } from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../prisma";
 import { Request, Response } from "express";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 
 router.get("/", async (req: any, res: any) => { 
   try {
     const grns = await prisma.gRN.findMany({
       orderBy: { date: "desc", },
-      include: { material: true },
+      include: { 
+        material: true,
+        issueItems: true
+      },
     });
     res.status(200).json(grns);
   } catch (error) {

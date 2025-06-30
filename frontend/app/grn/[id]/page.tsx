@@ -11,7 +11,7 @@ interface Material {
   updatedAt: string;
 }
 
-interface GRN {
+export interface GRN {
   id: string;
   grnNumber: string;
   date: string;
@@ -24,6 +24,7 @@ interface GRN {
   receivedBy: string;
   remarks: string;
   material: Material;
+  issueItems: any[];
 }
 
 const page = async ({ params }: { params: { id: string } }) => {

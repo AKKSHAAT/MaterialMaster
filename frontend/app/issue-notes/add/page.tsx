@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import EditButton from "@/app/components/EditButton";
 import api from "@/app/axios";
 import { getMaterials } from "@/app/apis";
-import Loader from "@/app/components/Loader";
 import { useRouter } from "next/navigation";
 
 export interface Material {
@@ -11,15 +10,15 @@ export interface Material {
   name: string;
   unit: string;
 }
+        
 const page = () => {
-  const [grn, setGrn] = useState({
+  const [issueNote, setIssueNote] = useState({
     materialId: "",
-    quantity: 0,
-    rate: 0,
+    totalQuantity: 0,
     totalAmount: 0,
-    supplierName: "",
-    receivedBy: "",
-    remarks: "",
+    issuedTo: "",
+    purpose: "",
+    approvedBy: "",
   });
   const [material, setMaterial] = useState<Material[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -40,34 +39,33 @@ const page = () => {
     }
     fetchMaterials();
   }, []);
+
   // Optionally, auto-calculate totalAmount
-  const handleQuantityOrRateChange = (
-    field: "quantity" | "rate",
-    value: number
-  ) => {
-    const updated = { ...grn, [field]: value };
-    updated.totalAmount = updated.quantity * updated.rate;
-    setGrn(updated);
-  };
+//   const handleQuantityOrRateChange = (
+//     field: "totalQuantity" | "weightedRate",
+//     value: number
+//   ) => {
+//     const updated = { ...issueNote, [field]: value };
+//     updated.totalAmount = updated.totalQuantity * updated.weightedRate;
+//     setIssueNote(updated);
+//   };
 
-  const sendGRN = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const sendIssueNote = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    const createGRN = await api.post("/grn", grn);
-    if (createGRN) {
-      router.push('/grn');
+    try {
+      const createIssueNote = await api.post("/issue-notes", issueNote);
+      if (createIssueNote) router.push('/issue-notes');
+    } catch (error) {
+      console.log(error);  
     }
-  };
-
-  if (loading) {
-    return <Loader />;
-  }
+  }; 
 
   return (
     <div className="min-h-screen bg-[#18181b] text-white p-8 pb-20">
       <div className="max-w-[80vw] mx-auto">
         <div className="flex justify-between gap-4 max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">Add a new GRN</h1>
-          <EditButton link="grn/add" text="New" />
+          <h1 className="text-2xl font-bold mb-6">Add a new Issue Note</h1>
+          <EditButton link="issue-notes/add" text="New" />
         </div>
         <form className="mx-auto flex flex-col gap-4 max-w-3xl">
           <section className="w-full flex flex-row gap-8">
@@ -75,9 +73,12 @@ const page = () => {
               <label className="flex flex-col">
                 <span className="mb-1">Material</span>
                 <select
-                  value={grn.materialId}
+                  value={issueNote.materialId}
                   onChange={(e) =>
-                    setGrn((prev) => ({ ...prev, materialId: e.target.value }))
+                    setIssueNote((prev) => ({
+                      ...prev,
+                      materialId: e.target.value,
+                    }))
                   }
                   className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white"
                 >
@@ -92,31 +93,17 @@ const page = () => {
                 </select>
               </label>
               <label className="flex flex-col">
-                <span className="mb-1">Quantity</span>
+                <span className="mb-1">Total Quantity</span>
                 <input
                   type="number"
-                  value={grn.quantity}
-                  onChange={(e) =>
-                    handleQuantityOrRateChange(
-                      "quantity",
-                      Number(e.target.value)
-                    )
+                  value={issueNote.totalQuantity}
+                  onChange={(e) => 
+                    setIssueNote((prev) => ({
+                      ...prev,
+                      totalQuantity: Number(e.target.value) || 0,
+                    }))
                   }
-                  placeholder="Quantity"
-                  className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white"
-                  min={0}
-                  step="any"
-                />
-              </label>
-              <label className="flex flex-col">
-                <span className="mb-1">Rate</span>
-                <input
-                  type="number"
-                  value={grn.rate}
-                  onChange={(e) =>
-                    handleQuantityOrRateChange("rate", Number(e.target.value))
-                  }
-                  placeholder="Rate"
+                  placeholder="Total Quantity"
                   className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white"
                   min={0}
                   step="any"
@@ -126,7 +113,7 @@ const page = () => {
                 <span className="mb-1">Total Amount</span>
                 <input
                   type="number"
-                  value={grn.totalAmount}
+                  value={issueNote.totalAmount}
                   readOnly
                   placeholder="Total Amount"
                   className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white opacity-70"
@@ -135,41 +122,47 @@ const page = () => {
             </div>
             <div className="w-1/2 flex flex-col gap-2">
               <label className="flex flex-col">
-                <span className="mb-1">Supplier Name</span>
+                <span className="mb-1">Issued To</span>
                 <input
                   type="text"
-                  value={grn.supplierName}
+                  value={issueNote.issuedTo}
                   onChange={(e) =>
-                    setGrn((prev) => ({
+                    setIssueNote((prev) => ({
                       ...prev,
-                      supplierName: e.target.value,
+                      issuedTo: e.target.value,
                     }))
                   }
-                  placeholder="Supplier Name"
+                  placeholder="Issued To"
                   className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white"
                 />
               </label>
               <label className="flex flex-col">
-                <span className="mb-1">Received By</span>
+                <span className="mb-1">Purpose</span>
                 <input
                   type="text"
-                  value={grn.receivedBy}
+                  value={issueNote.purpose}
                   onChange={(e) =>
-                    setGrn((prev) => ({ ...prev, receivedBy: e.target.value }))
+                    setIssueNote((prev) => ({
+                      ...prev,
+                      purpose: e.target.value,
+                    }))
                   }
-                  placeholder="Received By"
+                  placeholder="Purpose (optional)"
                   className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white"
                 />
               </label>
               <label className="flex flex-col">
-                <span className="mb-1">Remarks</span>
+                <span className="mb-1">Approved By</span>
                 <input
                   type="text"
-                  value={grn.remarks}
+                  value={issueNote.approvedBy}
                   onChange={(e) =>
-                    setGrn((prev) => ({ ...prev, remarks: e.target.value }))
+                    setIssueNote((prev) => ({
+                      ...prev,
+                      approvedBy: e.target.value,
+                    }))
                   }
-                  placeholder="Remarks (optional)"
+                  placeholder="Approved By"
                   className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white"
                 />
               </label>
@@ -177,10 +170,10 @@ const page = () => {
           </section>
           <button
             type="button"
-            onClick={sendGRN}
+            onClick={sendIssueNote}
             className="w-full md:w-[368px] bg-blue-500 text-white rounded-md p-2 cursor-pointer hover:bg-blue-600 transition-colors duration-200"
           >
-            Generate GRN
+            Generate Issue Note
           </button>
         </form>
       </div>
