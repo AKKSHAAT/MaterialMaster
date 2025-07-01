@@ -22,6 +22,7 @@ const page = () => {
     remarks: "",
   });
   const [material, setMaterial] = useState<Material[]>([]);
+  const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
@@ -76,9 +77,13 @@ const page = () => {
                 <span className="mb-1">Material</span>
                 <select
                   value={grn.materialId}
-                  onChange={(e) =>
+                  onChange={(e) =>{
                     setGrn((prev) => ({ ...prev, materialId: e.target.value }))
-                  }
+                    const m = material.find(
+                      (mat) => mat.id === e.target.value
+                    );
+                    setSelectedUnit(m ? m.unit : "");
+                  }}
                   className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white"
                 >
                   <option value="" disabled>
@@ -92,7 +97,7 @@ const page = () => {
                 </select>
               </label>
               <label className="flex flex-col">
-                <span className="mb-1">Quantity</span>
+                <span className="mb-1">Quantity {selectedUnit && selectedUnit + '(s)'}</span>
                 <input
                   type="number"
                   value={grn.quantity}

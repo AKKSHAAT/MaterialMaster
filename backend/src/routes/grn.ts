@@ -1,6 +1,7 @@
 import { Router } from "express";
 import prisma from "../prisma";
 import { Request, Response } from "express";
+import { getStockQty } from "../utils/grnUtils";
 
 const router = Router();
 
@@ -21,6 +22,10 @@ router.get("/", async (req: any, res: any) => {
   }
 });
 
+router.get('/qty', async(req: Request, res: Response) => {
+  const stockQty = await getStockQty();
+  res.status(200).json(stockQty);
+})
 
 router.get("/:id", async (req: any, res: any) => { 
   const { id } = req.params;
@@ -35,6 +40,7 @@ router.get("/:id", async (req: any, res: any) => {
     res.status(500).json({ error: "Failed to fetch GRNs" });
   }
 });
+
 
 router.post("/", async (req: any, res: any) => {
   const body = req.body;

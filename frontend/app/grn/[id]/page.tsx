@@ -29,7 +29,15 @@ export interface GRN {
 
 const page = async ({ params }: { params: { id: string } }) => {
   const { id } = await params;
-  const grn : GRN  = await api.get(`/grn/${id}`);
+
+  let grn : GRN;
+  
+  try {
+    grn = await api.get(`/grn/${id}`);
+  } catch (error) {
+    console.error("Error fetching GRN:", error);
+    return <div className="text-red-500">⚠️ Error loading GRN data. Check Console</div>;
+  }
   
 
   return (
