@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import EditButton from "@/app/components/EditButton";
 import api from "@/app/axios";
 import { getMaterials } from "@/app/apis";
@@ -10,7 +10,7 @@ export interface Material {
   name: string;
   unit: string;
 }
-        
+
 const page = () => {
   const [issueNote, setIssueNote] = useState({
     materialId: "",
@@ -22,7 +22,10 @@ const page = () => {
   });
   const [material, setMaterial] = useState<Material[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [estimate, setEstimate] = useState<any>(null);
+  const [gettingEstimate, setGettingEstimate] = useState<boolean>(false);
   const router = useRouter();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     async function fetchMaterials() {
@@ -40,25 +43,46 @@ const page = () => {
     fetchMaterials();
   }, []);
 
-  // Optionally, auto-calculate totalAmount
-//   const handleQuantityOrRateChange = (
-//     field: "totalQuantity" | "weightedRate",
-//     value: number
-//   ) => {
-//     const updated = { ...issueNote, [field]: value };
-//     updated.totalAmount = updated.totalQuantity * updated.weightedRate;
-//     setIssueNote(updated);
-//   };
+  // Debounced estimate effect
+  useEffect(() => {
+    if (!issueNote.materialId || !issueNote.totalQuantity) {
+      setEstimate(null);
+      return;
+    }
+    setGettingEstimate(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const est = await api.post("/issue-notes/estimate", issueNote);
+        setEstimate(est);
+        console.log(est, "💰💰");
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setGettingEstimate(false);
+      }
+    }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    issueNote.materialId,
+    issueNote.totalQuantity,
+    issueNote.issuedTo,
+    issueNote.purpose,
+    issueNote.approvedBy,
+  ]);
 
   const sendIssueNote = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const createIssueNote = await api.post("/issue-notes", issueNote);
-      if (createIssueNote) router.push('/issue-notes');
+      if (createIssueNote) router.push("/issue-notes");
     } catch (error) {
-      console.log(error);  
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-  }; 
+  };
 
   return (
     <div className="min-h-screen bg-[#18181b] text-white p-8 pb-20">
@@ -97,12 +121,12 @@ const page = () => {
                 <input
                   type="number"
                   value={issueNote.totalQuantity}
-                  onChange={(e) => 
+                  onChange={(e) => {
                     setIssueNote((prev) => ({
                       ...prev,
                       totalQuantity: Number(e.target.value) || 0,
-                    }))
-                  }
+                    }));
+                  }}
                   placeholder="Total Quantity"
                   className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white"
                   min={0}
@@ -111,13 +135,12 @@ const page = () => {
               </label>
               <label className="flex flex-col">
                 <span className="mb-1">Total Amount</span>
-                <input
-                  type="number"
-                  value={issueNote.totalAmount}
-                  readOnly
-                  placeholder="Total Amount"
-                  className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white opacity-70"
-                />
+                <p className="w-full border border-[#2d2d37] rounded-md p-2 bg-[#23232b] text-white opacity-70 min-h-[41px]">
+                  {estimate &&
+                    (gettingEstimate
+                      ? "Calculating..."
+                      : `₹ ${estimate.totalAmount}`)}
+                </p>
               </label>
             </div>
             <div className="w-1/2 flex flex-col gap-2">

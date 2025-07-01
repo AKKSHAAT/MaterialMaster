@@ -5,6 +5,7 @@ import EditButton from '../components/EditButton';
 import { useRouter } from 'next/navigation';
 import { getUsedQty } from '../utils/grn';
 import Loader from '../components/Loader';
+import UploadBtn from '../components/Dashboard/UploadBtn';
 
 const page = () => { 
     const [grns, setGrns] = useState<any[]>([]);
@@ -37,6 +38,7 @@ const page = () => {
                 <div className="flex justify-between gap-4 max-w-3xl mx-auto">
                     <h1 className="text-2xl font-bold mb-6">GRNs</h1>
                     <EditButton link="materials/add" text="New"/>
+                    <UploadBtn link="/exel" text="Upload form Exel" />
                 </div>
                 <p className="mx-auto text-gray-400">Please add some GRNs.</p>
             </div>
@@ -47,7 +49,10 @@ const page = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between gap-4 max-w-3xl mx-auto">
             <h1 className="text-2xl font-bold mb-6">GRNs</h1>
-            <EditButton link="grn/add" text="New"/>
+            <div className='flex justify-end gap-2'>
+              <EditButton link="grn/add" text="New"/>
+              <UploadBtn link="/exel" text="Upload form Exel" />
+            </div>
         </div>
         <div className="overflow-x-auto rounded-lg shadow">
           <table className="min-w-full bg-[#23232b] border border-[#2d2d37]">

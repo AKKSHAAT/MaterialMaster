@@ -46,8 +46,6 @@ router.post("/", async (req: any, res: any) => {
   const body = req.body;
   console.log("Received GRN data:", body);
   try {
-
-    // Find number of rows in the GRN table
     const grnNumber = String(await prisma.gRN.count() + 1);
     const date = new Date();
     const grn = {...body, grnNumber, date}
@@ -60,5 +58,7 @@ router.post("/", async (req: any, res: any) => {
     res.status(500).json({ error: "Failed to add material" });
   }
 });
+
+
 
 export default router;

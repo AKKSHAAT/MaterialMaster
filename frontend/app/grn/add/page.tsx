@@ -69,6 +69,7 @@ const page = () => {
         <div className="flex justify-between gap-4 max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Add a new GRN</h1>
           <EditButton link="grn/add" text="New" />
+          
         </div>
         <form className="mx-auto flex flex-col gap-4 max-w-3xl">
           <section className="w-full flex flex-row gap-8">

@@ -2,61 +2,64 @@ import prisma from "../prisma";
 import { GRN, IssueItem, Material } from "@prisma/client";
 
 interface GetGRNParams {
-    order?: "asc" | "desc";
-    materialID?: string;
+  order?: "asc" | "desc";
+  materialID?: string;
 }
 
-export async function getGRN({order = "asc", materialID}: GetGRNParams) {
-    const GRNs = await prisma.gRN.findMany({
-        where: {materialId: materialID},
-        orderBy: {date: order},
-        include: {
-            material: true,
-            issueItems: true,
-        },
+export async function getGRN({ order = "asc", materialID }: GetGRNParams) {
+  const GRNs = await prisma.gRN.findMany({
+    where: { materialId: materialID },
+    orderBy: { date: order },
+    include: {
+      material: true,
+      issueItems: true,
+    },
+  });
+  return GRNs;
+}
+
+export async function generateIssueItems({
+  requiredQty,
+  GRNs,
+}: {
+  requiredQty: number;
+  GRNs: (GRN & { material: Material; issueItems: IssueItem[] })[];
+}) {
+  const issueItems: Omit<IssueItem, "id" | "issueNoteId">[] = [];
+  let remaining = requiredQty;
+  let totalAmount = 0;
+
+  for (const grn of GRNs) {
+    const usedQty = grn.issueItems.reduce((sum, i) => sum + i.quantity, 0);
+    const availableQty = grn.quantity - usedQty;
+
+    if (availableQty <= 0) continue; // ⛔ skip this GRN — no stock left
+
+    const qtyToUse = Math.min(availableQty, remaining);
+
+    issueItems.push({
+      grnId: grn.id,
+      quantity: qtyToUse,
+      rate: grn.rate,
+      amount: qtyToUse * grn.rate,
     });
-    return GRNs;
-};
 
-export async function generateIssueItems({requiredQty, GRNs} : {requiredQty: number, GRNs: (GRN & {material:Material, issueItems: IssueItem[]})[] }) {
-    const issueItems: Omit<IssueItem, "id" | "issueNoteId">[] = [];
-    let remaining = requiredQty;
-    let totalAmount = 0;
+    totalAmount += qtyToUse * grn.rate;
+    remaining -= qtyToUse;
 
-    for (const grn of GRNs) {
-        const usedQty = grn.issueItems.reduce((sum, i) => sum + i.quantity, 0);
-        const availableQty = grn.quantity - usedQty;
+    if (remaining <= 0) break;
+  }
 
-        if (availableQty <= 0) continue; // ⛔ skip this GRN — no stock left
+  if (remaining > 0) {
+    throw new Error("Not enough stock to fulfill request");
+  }
 
-        const qtyToUse = Math.min(availableQty, remaining);
-
-        issueItems.push({
-        grnId: grn.id,
-        quantity: qtyToUse,
-        rate: grn.rate,
-        amount: qtyToUse * grn.rate
-        });
-
-        totalAmount += qtyToUse * grn.rate;
-        remaining -= qtyToUse;
-
-        if (remaining <= 0) break;
-    }
-
-    if (remaining > 0) {
-        throw new Error("Not enough stock to fulfill request");
-    }
-
-    return {
-        issueItems,
-        totalAmount,
-        weightedRate: totalAmount / requiredQty
-    };
+  return {
+    issueItems,
+    totalAmount,
+    weightedRate: totalAmount / requiredQty,
+  };
 }
-
-
-
 
 export async function generateUniqueIssueNumber() {
   // Get current year
@@ -88,8 +91,13 @@ export async function generateUniqueIssueNumber() {
   return `ISN/${year}/${padded}`;
 }
 
-
-export async function generateIssueNote({ materialId, quantity, issuedTo, approvedBy, purpose }: {
+export async function generateIssueNote({
+  materialId,
+  quantity,
+  issuedTo,
+  approvedBy,
+  purpose,
+}: {
   materialId: string;
   quantity: number;
   issuedTo: string;
@@ -97,27 +105,22 @@ export async function generateIssueNote({ materialId, quantity, issuedTo, approv
   purpose?: string;
 }) {
   const GRNs = await getGRN({ materialID: materialId });
-
-  const { issueItems, totalAmount, weightedRate } = await generateIssueItems({ requiredQty: quantity, GRNs });
-  const issueNumber = await generateUniqueIssueNumber();
-  const issueNote = await prisma.issueNote.create({
-    data: {
-      issueNumber, // implement this separately
-      date: new Date(),
-      materialId,
-      totalQuantity: quantity,
-      weightedRate,
-      totalAmount,
-      issuedTo,
-      approvedBy,
-      purpose,
-      issueItems: {
-        create: issueItems
-      }
-    }
+    const { issueItems, totalAmount, weightedRate } = await generateIssueItems({
+    requiredQty: quantity,
+    GRNs,
   });
-
-  return issueNote;
+  const issueNumber = await generateUniqueIssueNumber();
+  // Return the data needed to create the issue note, but do not create it here
+  return {
+    issueNumber,
+    date: new Date(),
+    materialId,
+    totalQuantity: quantity,
+    weightedRate,
+    totalAmount,
+    issuedTo,
+    approvedBy,
+    purpose,
+    issueItems,
+  };
 }
-
-
